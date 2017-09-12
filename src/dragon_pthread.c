@@ -138,10 +138,21 @@ int dragon_limits_pthread(limits_t *limits, uint64_t size, int nb_thread)
 	piece_t master;
 
 	piece_init(&master);
+	thread_data->piece = master; //i have no idea what im doing
 
 	/* 1. ALlouer de l'espace pour threads et threads_data. */
+	threads = malloc(sizeof(pthread_t)*nb_thread);
+	thread_data = malloc(sizeof(limit_data)*nb_thread);
 	/* 2. Lancement du calcul en parallèle avec dragon_limit_worker. */
+	for (unsigned int i = 0; i < nb_thread; ++i)
+	{
+		 pthread_create(&threads[i],NULL, dragon_limit_worker, &thread_data[i]);
+	}
 	/* 3. Attendre la fin du traitement. */
+	for (unsigned int i = 0; i < nb_thread; ++i)
+	{
+		pthread_join(threads[i], NULL);
+	}
 
 done:
 	FREE(threads);
