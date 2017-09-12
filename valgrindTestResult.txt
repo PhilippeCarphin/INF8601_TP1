@@ -1,0 +1,11 @@
+==5074== Callgrind, a call-graph generating cache profiler
+==5074== Copyright (C) 2002-2015, and GNU GPL'd, by Josef Weidendorfer et al.
+==5074== Using Valgrind-3.12.0 and LibVEX; rerun with -h for copyright info
+==5074== Command: ./src/dragonizer --cmd draw --power 25 --lib serial
+==5074== 
+==5074== For interactive control, run 'callgrind_control -h'.
+==5074== 
+==5074== Events    : Ir
+==5074== Collected : 3347016497
+==5074== 
+==5074== I   refs:      3,347,016,497
