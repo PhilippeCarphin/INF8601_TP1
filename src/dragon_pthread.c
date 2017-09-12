@@ -31,6 +31,9 @@ void printf_threadsafe(char *format, ...)
 void *dragon_draw_worker(void *data)
 {
 	/* 1. Initialiser la surface */
+	struct draw_data *worker_data = (struct draw_data*) data;
+	int **dragon = NULL;
+
 	/* 2. Dessiner le dragon */
 	/* 3. Effectuer le rendu final */
 	return NULL;
@@ -58,6 +61,8 @@ int dragon_draw_pthread(char **canvas, struct rgb *image, int width, int height,
 		goto err;
 
 	/* 1. Initialiser barrier. */
+	pthread_barrier_init(&barrier, NULL, nb_thread);
+
 
 	if (dragon_limits_pthread(&lim, size, nb_thread) < 0)
 		goto err;
@@ -98,14 +103,22 @@ int dragon_draw_pthread(char **canvas, struct rgb *image, int width, int height,
 	info.image = image;
 
 	/* 2. Lancement du calcul parallèle principal avec draw_dragon_worker */
-
-	/* 3. Attendre la fin du traitement */
+	for (unsigned int i = 0; i < nb_thread; ++i)
+	{
+		 pthread_create(&threads[i],NULL, dragon_draw_worker, &data[i]);
+	}
+	/* 3. Attendre la fin du traitement. */
+	for (unsigned int i = 0; i < nb_thread; ++i)
+	{
+		pthread_join(threads[i], NULL);
+	}
 
 	/* 4. Destruction des variables (à compléter). */ 
-
+	pthread_barrier_destroy(&barrier);
 done:
 	FREE(data);
 	FREE(threads);
+
 	free_palette(palette);
 	*canvas = dragon;
 	return ret;
@@ -144,8 +157,19 @@ int dragon_limits_pthread(limits_t *limits, uint64_t size, int nb_thread)
 	threads = malloc(sizeof(pthread_t)*nb_thread);
 	thread_data = malloc(sizeof(limit_data)*nb_thread);
 	/* 2. Lancement du calcul en parallèle avec dragon_limit_worker. */
+	unsigned int piece_size = size/nb_threads;
 	for (unsigned int i = 0; i < nb_thread; ++i)
 	{
+		 thread_data[i].id = i;
+		 thread_data[i].start = i*piece_size;
+		 if (i != nb_thread-1)
+		 {
+		 	thread_data[i].end = i+1*piece_size;
+		 }
+		 else
+		 {
+		 	thread_data[i].end = size;
+		 }	
 		 pthread_create(&threads[i],NULL, dragon_limit_worker, &thread_data[i]);
 	}
 	/* 3. Attendre la fin du traitement. */
