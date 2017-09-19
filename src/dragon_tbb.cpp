@@ -19,7 +19,25 @@ extern "C" {
 using namespace std;
 using namespace tbb;
 
-class DragonLimits {
+class DragonLimits {	
+	DragonLimits(unsigned int nb_thread)
+	{
+		piece = new piece_t[nb_thread];
+		start = new unsigned int[nb_thread];
+		end = new unsigned int [nb_thread];
+		for (unsigned int i = 0; i < nb_thread; ++i)
+		{
+			piece_init(&piece[i]);
+		}
+	}
+	struct piece_t *piece;
+	unsigned int *start;
+	unsigned int *end;
+	void operator()( const blocked_range<int>& range ) const 
+	{
+		for( int i=range.begin(); i!=range.end(); ++i )
+			piece_limit(start[i], end[i], &piece[i]);
+	}
 };
 
 class DragonDraw {
@@ -107,11 +125,19 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 int dragon_limits_tbb(limits_t *limits, uint64_t size, int nb_thread)
 {
 	TODO("dragon_limits_tbb");
-	DragonLimits lim;
+	DragonLimits lim = DragonLimits(nb_thread);
 
 
 	piece_t piece;
 	piece_init(&piece);
+
+
+	//initialization part
+	for (unsigned int i = 0; i < nb_thread; ++i)
+	{
+
+	}
+
 	*limits = piece.limits;
 	return 0;
 }
