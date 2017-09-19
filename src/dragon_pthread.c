@@ -170,7 +170,11 @@ int dragon_limits_pthread(limits_t *limits, uint64_t size, int nb_thread)
 		 {
 		 	thread_data[i].end = size;
 		 }	
-		 pthread_create(&threads[i],NULL, dragon_limit_worker, &thread_data[i]);
+		 if(pthread_create(&threads[i],NULL, dragon_limit_worker, &thread_data[i]) != 0)
+		 {
+		 	printf_threadsafe("%s(): pthread_create error\n", __FUNCTION__);
+		 	goto err;
+		 }
 	}
 	/* 3. Attendre la fin du traitement. */
 	for (unsigned int i = 0; i < nb_thread; ++i)
