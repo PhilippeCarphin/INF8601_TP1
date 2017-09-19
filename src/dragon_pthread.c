@@ -30,13 +30,18 @@ void printf_threadsafe(char *format, ...)
 
 void *dragon_draw_worker(void *data)
 {
-	/* 1. Initialiser la surface */
 	struct draw_data *worker_data = (struct draw_data*) data;
+
+	/* 1. Initialiser la surface */
+	uint64_t start = (worker_data->size / worker_data->nb_threads) * worker_data->id;
+	uint64_t end = (worker_data->size / worker_data->nb_threads) * (worker_data->id + 1)	
 
 	/* 2. Dessiner le dragon */
 	// dragon_draw_raw(uint64_t start, uint64_t end, char *dragon, int width, int height, limits_t limits, char id)
+	dragon_draw_raw( start, end, worker_data->dragon, worker_data->image_width, worker_data->image_height, worker_data->limits, worker_data.id)
 
 	/* 3. Effectuer le rendu final */
+
 	return NULL;
 }
 
@@ -106,9 +111,8 @@ int dragon_draw_pthread(char **canvas, struct rgb *image, int width, int height,
 	/* 2. Lancement du calcul parallèle principal avec draw_dragon_worker */
 	for (unsigned int i = 0; i < nb_thread; ++i)
 	{
+		 data[i] = info;
 		 data[i].id = i;
-		 data[i].nb_thread = nb_thread;
-		 data[i].barrier = &barrier; // Pointer to a pthread_barrier_t
 		 pthread_create(&threads[i],NULL, dragon_draw_worker, &data[i]);
 	}
 	/* 3. Attendre la fin du traitement. */
