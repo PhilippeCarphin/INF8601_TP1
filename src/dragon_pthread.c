@@ -32,9 +32,10 @@ void *dragon_draw_worker(void *data)
 {
 	/* 1. Initialiser la surface */
 	struct draw_data *worker_data = (struct draw_data*) data;
-	int **dragon = NULL;
 
 	/* 2. Dessiner le dragon */
+	// dragon_draw_raw(uint64_t start, uint64_t end, char *dragon, int width, int height, limits_t limits, char id)
+
 	/* 3. Effectuer le rendu final */
 	return NULL;
 }
@@ -105,6 +106,9 @@ int dragon_draw_pthread(char **canvas, struct rgb *image, int width, int height,
 	/* 2. Lancement du calcul parallèle principal avec draw_dragon_worker */
 	for (unsigned int i = 0; i < nb_thread; ++i)
 	{
+		 data[i].id = i;
+		 data[i].nb_thread = nb_thread;
+		 data[i].barrier = &barrier; // Pointer to a pthread_barrier_t
 		 pthread_create(&threads[i],NULL, dragon_draw_worker, &data[i]);
 	}
 	/* 3. Attendre la fin du traitement. */
@@ -151,7 +155,8 @@ int dragon_limits_pthread(limits_t *limits, uint64_t size, int nb_thread)
 	piece_t master;
 
 	piece_init(&master);
-	thread_data->piece = master; //i have no idea what im doing
+
+	thread_data->piece = master; //i have no idea what im doing -> Je pense que ça fait pas de sens.
 
 	/* 1. ALlouer de l'espace pour threads et threads_data. */
 	threads = malloc(sizeof(pthread_t)*nb_thread);
