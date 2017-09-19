@@ -173,7 +173,7 @@ int dragon_limits_pthread(limits_t *limits, uint64_t size, int nb_thread)
 		 thread_data[i].start = i*piece_size;
 		 if (i != nb_thread-1)
 		 {
-		 	thread_data[i].end = i+1*piece_size;
+		 	thread_data[i].end = (i+1)*piece_size;
 		 }
 		 else
 		 {
