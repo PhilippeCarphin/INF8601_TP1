@@ -36,8 +36,8 @@ void *dragon_draw_worker(void *data)
 	uint64_t area = wd->dragon_width * wd->dragon_height;
 	uint64_t start = (area / wd->nb_thread) * wd->id;
 	uint64_t end = (area / wd->nb_thread) * (wd->id + 1);	
-	init_canvas(start, end-1, wd->dragon, -1);
-
+	init_canvas(start, end, wd->dragon, -1);
+	pthread_barrier_wait(wd->barrier);
 
 
 	/* 2. Dessiner le dragon */
@@ -45,9 +45,10 @@ void *dragon_draw_worker(void *data)
 
 
 	// Draw dragon
-
+	start = (wd->size / wd->nb_thread) * wd->id;
+	end = (wd->size / wd->nb_thread) * (wd->id + 1);	
 	dragon_draw_raw(start, end, wd->dragon, wd->dragon_width, wd->dragon_height, wd->limits, wd->id);
-
+	pthread_barrier_wait(wd->barrier);
 
 
 	/* 3. Effectuer le rendu final */
@@ -176,7 +177,6 @@ int dragon_limits_pthread(limits_t *limits, uint64_t size, int nb_thread)
 	unsigned int piece_size = size/nb_thread;
 	for (unsigned int i = 0; i < nb_thread; ++i)
 	{
-		printf("%s() piece_size = %ld/n", __FUNCTION__, size);
 		 thread_data[i].piece = master;
 		 thread_data[i].id = i;
 		 thread_data[i].start = i*piece_size;
