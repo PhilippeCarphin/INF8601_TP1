@@ -52,6 +52,19 @@ public:
 };
 
 class DragonDraw {
+	public:
+	struct draw_data _data;
+	DragonDraw(struct draw_data data)
+	{
+		_data = data;
+	}
+
+	void operator()(const tbb::blocked_range<uint64_t>& r) const
+	{
+		dragon_draw_raw(r.begin(), r.end(), _data.dragon,
+						_data.dragon_width, _data.dragon_height,
+						_data.limits, _data.id);
+	}
 };
 
 class DragonRender {
@@ -131,6 +144,8 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 	parallel_for(blocked_range<uint64_t>(0,area), dc);
 
 	/* 3. Dessiner le dragon : DragonDraw */
+	DragonDraw dd = DragonDraw(data);
+	parallel_for(blocked_range<uint64_t>(0,size), dd);
 
 	/* 4. Effectuer le rendu final */
 
