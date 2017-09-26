@@ -58,6 +58,17 @@ class DragonRender {
 };
 
 class DragonClear {
+	public:
+	struct draw_data _data;
+	DragonClear(struct draw_data data)
+	{
+		_data = data;
+	}
+
+	void operator()(const tbb::blocked_range<uint64_t>& r) const
+	{
+		init_canvas(r.begin(), r.end(), _data.dragon, -1);
+	}
 };
 
 int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uint64_t size, int nb_thread)
@@ -115,6 +126,9 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 	data.tid = (int *) calloc(nb_thread, sizeof(int));
 
 	/* 2. Initialiser la surface : DragonClear */
+	uint64_t area = data.dragon_width * data.dragon_height;
+	DragonClear dc = DragonClear(data);	
+	parallel_for(blocked_range<uint64_t>(0,area), dc);
 
 	/* 3. Dessiner le dragon : DragonDraw */
 
