@@ -29,60 +29,26 @@ public:
 		piece_init(&_master);
 	}
 
-	void operator()(const tbb::blocked_range<uint64_t>& r) const
+	// Splitting constructor. They will all get a copy of the root instance of
+	// DragonLimits which is a piece on which piece_init has been called.
+	// Same as thread_data[i].piece = master.
+	DragonLimits(const DragonLimits& dl, split)
 	{
-			// Done in constructor
-			// piece_t master;
-			// piece_init(&master);
-
-			// calcul des arguments a passer a chaque thread (les
-			// trhead_data.{start,end}
-			// Ils recoivent tous une copie de la piece master
-			// unsigned int piece_size = size/nb_thread;
-			// for (unsigned int i = 0; i < nb_thread; ++i)
-			// {
-			// 	 thread_data[i].piece = master;
-			// 	 thread_data[i].id = i;
-			// 	 thread_data[i].start = i*piece_size;
-			// 	 if (i != nb_thread-1)
-			// 	 {
-			// 		thread_data[i].end = (i+1)*piece_size;
-			// 	 }
-			// 	 else
-			// 	 {
-			// 		thread_data[i].end = size;
-			// 	 }
-
-
-			// caller le worker
-			// 	 if(pthread_create(&threads[i],NULL, dragon_limit_worker, &thread_data[i]) != 0)
-			// 	 {
-			// 		printf_threadsafe("%s(): pthread_create error\n", __FUNCTION__);
-			// 		goto err;
-			// 	 }
-			// }
-			// le worker appelle piece_limit() avec son start, son end, et une copie
-			// de la piece master propre a chaque thread.
-		piece_t task_piece = _master; // Copie (thread_data[i].piece = master;)
-		piece_limit(r.begin(), r.end(),(piece_t *)&_master);
-
-
-			// /* 3. Attendre la fin du traitement. */
-			// for (unsigned int i = 0; i < nb_thread; ++i)
-			// {
-			// 	pthread_join(threads[i], NULL);
-			// }
-
-		// TODO Do some kind of synchronization?
-
-
-			// for (unsigned int i = 0; i < nb_thread; ++i)
-			// {
-			// 	piece_merge(&master, thread_data[i].piece);
-			// }
-		piece_merge((piece_t*)&_master, task_piece);
+		_master = dl._master;
 	}
 
+	// Thread worker Arguments passed to piece_limit are calculated by TBB
+	// automatically
+	void operator()(const tbb::blocked_range<uint64_t>& r) const
+	{
+		piece_limit(r.begin(), r.end(),(piece_t *)&_master);
+	}
+
+	// Join rhs with myself
+	void join(DragonLimits& rhs)
+	{
+		piece_merge(&_master, rhs._master);
+	}
 };
 
 class DragonDraw {
@@ -169,14 +135,10 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
  */
 int dragon_limits_tbb(limits_t *limits, uint64_t size, int nb_thread)
 {
-	TODO("dragon_limits_tbb");
 	DragonLimits lim = DragonLimits(nb_thread);
 
+	tbb::parallel_reduce(tbb::blocked_range<uint64_t>(0, size), lim);
 
-	//initialization part
-	tbb::parallel_for(tbb::blocked_range<uint64_t>(0, size), lim);
-
-	// Return out-parameter
 	*limits = lim._master.limits;
 	return 0;
 }
