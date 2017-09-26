@@ -68,6 +68,20 @@ class DragonDraw {
 };
 
 class DragonRender {
+	public:
+	struct draw_data _data;
+	DragonRender(struct draw_data data)
+	{
+		_data = data;
+	}
+
+	void operator()(const tbb::blocked_range<uint64_t>& r) const
+	{
+		scale_dragon(r.begin(), r.end(), _data.image, _data.image_width, _data.image_height,
+										_data.dragon, _data.dragon_width, _data.dragon_height,
+										_data.palette);
+	}
+
 };
 
 class DragonClear {
@@ -148,6 +162,9 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 	parallel_for(blocked_range<uint64_t>(0,size), dd);
 
 	/* 4. Effectuer le rendu final */
+	DragonRender dr = DragonRender(data);
+	uint64_t image_area = data.image_width * data.image_height;
+	parallel_for(blocked_range<uint64_t>(0,height), dr);
 
 	init.terminate();
 
