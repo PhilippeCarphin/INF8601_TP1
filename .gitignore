@@ -4,3 +4,10 @@
 *.a
 
 *.o
+*.log
+*.out
+dragonizer
+autom4te.cache
+libtool
+*Makefile*
+config.status
