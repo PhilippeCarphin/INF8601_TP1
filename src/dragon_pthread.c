@@ -151,8 +151,8 @@ err:
 
 void *dragon_limit_worker(void *data)
 {
-	struct limit_data *lim = (struct limit_data *) data;
-	piece_limit(lim->start, lim->end, &lim->piece);
+	struct limit_data *args = (struct limit_data *) data;
+	piece_limit(args->start, args->end, &args->piece);
 	return NULL;
 }
 

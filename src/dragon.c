@@ -333,7 +333,7 @@ struct rgb *make_canvas(int width, int height)
 void piece_limit(int64_t start, int64_t end, piece_t *m)
 {
 	int64_t n;
-	xy_t *position = &m->position;
+	xy_t *position = &m->position; // &(m->position)
 	xy_t *orientation = &m->orientation;
 	xy_t *minimums = &m->limits.minimums;
 	xy_t *maximums = &m->limits.maximums;

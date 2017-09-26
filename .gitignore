@@ -1,4 +1,6 @@
-*.o
-*.out
-*.cache
+*.swp
+*.swm
+*.swn
+*.a
 
+*.o
