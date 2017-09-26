@@ -22,11 +22,11 @@ using namespace tbb;
 class DragonLimits {
 
 public:
-	piece_t _master;
+	piece_t _piece;
 
 	DragonLimits(unsigned int nb_thread)
 	{
-		piece_init(&_master);
+		piece_init(&_piece);
 	}
 
 	// Splitting constructor. They will all get a copy of the root instance of
@@ -34,20 +34,20 @@ public:
 	// Same as thread_data[i].piece = master.
 	DragonLimits(const DragonLimits& dl, split)
 	{
-		_master = dl._master;
+		piece_init(&_piece);
 	}
 
 	// Thread worker Arguments passed to piece_limit are calculated by TBB
 	// automatically
 	void operator()(const tbb::blocked_range<uint64_t>& r) const
 	{
-		piece_limit(r.begin(), r.end(),(piece_t *)&_master);
+		piece_limit(r.begin(), r.end(),(piece_t *)&_piece);
 	}
 
 	// Join rhs with myself
 	void join(DragonLimits& rhs)
 	{
-		piece_merge(&_master, rhs._master);
+		piece_merge(&_piece, rhs._piece);
 	}
 };
 
@@ -139,6 +139,6 @@ int dragon_limits_tbb(limits_t *limits, uint64_t size, int nb_thread)
 
 	tbb::parallel_reduce(tbb::blocked_range<uint64_t>(0, size), lim);
 
-	*limits = lim._master.limits;
+	*limits = lim._piece.limits;
 	return 0;
 }
