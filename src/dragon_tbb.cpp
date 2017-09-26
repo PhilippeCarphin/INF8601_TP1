@@ -127,7 +127,7 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 
 	/* 2. Initialiser la surface : DragonClear */
 	uint64_t area = data.dragon_width * data.dragon_height;
-	DragonClear dc = DragonClear(data);	
+	DragonClear dc = DragonClear(data);
 	parallel_for(blocked_range<uint64_t>(0,area), dc);
 
 	/* 3. Dessiner le dragon : DragonDraw */
