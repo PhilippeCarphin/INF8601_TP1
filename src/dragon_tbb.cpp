@@ -61,9 +61,12 @@ class DragonDraw {
 
 	void operator()(const tbb::blocked_range<uint64_t>& r) const
 	{
+		int id = gettid();
 		dragon_draw_raw(r.begin(), r.end(), _data.dragon,
 						_data.dragon_width, _data.dragon_height,
-						_data.limits, _data.id);
+						_data.limits, id);
+
+
 	}
 };
 
@@ -163,7 +166,6 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 
 	/* 4. Effectuer le rendu final */
 	DragonRender dr = DragonRender(data);
-	uint64_t image_area = data.image_width * data.image_height;
 	parallel_for(blocked_range<uint64_t>(0,height), dr);
 
 	init.terminate();
