@@ -279,22 +279,28 @@ int cmp_limits(limits_t *l1, limits_t *l2)
  */
 int cmp_canvas(char *exp, char *act, int width, int height, int verbose)
 {
+	printf("%s() : \n", __FUNCTION__);
 	int i, j;
 	int sum = 0;
 	int index;
-	if (exp == NULL || act == NULL)
+	if (exp == NULL || act == NULL){
+		printf("%s() : exp = %p, act = %p\n", __FUNCTION__, exp, act);
 		return -1;
+	}
+
 	#pragma omp parallel for reduction(+:sum) private(index, j)
 	for (i = 0; i < height; i++) {
 		for (j = 0; j < width; j++) {
 			index = i * width + j;
 			if (exp[index] != act[index]) {
+				printf("Error at position (i,j) = (%d, %d)\n",i,j);
 				if (verbose)
 					printf("pix error (%5d, %5d) expected=%2d actual=%2d\n", j, i, exp[index], act[index]);
 				sum += 1;
 			}
 		}
 	}
+	printf("%s() returning %d \n", __FUNCTION__, sum);
 	return sum;
 }
 

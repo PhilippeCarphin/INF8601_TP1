@@ -292,7 +292,7 @@ static int check_draw(struct command_opts *opts)
 		goto err;
 	}
 
-	char *fmt = "%s %10s %10s threshold=%d gap=%d (%.3f%%)\n";
+	char *fmt = "%s %10s %10s threshold=%d gap=%d (%.8f%%)\n";
 	for (i = 1; libs[i].lib != THREAD_LIB_NONE; i++) {
 		const char *name = libs[i].name;
 		ret = libs[i].draw_handler(&drg_act, img_act, opts->width, opts->height, opts->size, opts->nb_thread);
