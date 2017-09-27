@@ -51,22 +51,61 @@ public:
 	}
 };
 
+uint64_t max(uint64_t a, uint64_t b)
+{
+	return ( a < b ? b : a);
+}
+uint64_t min(uint64_t a, uint64_t b)
+{
+	return (a < b ? a : b);
+}
+
 class DragonDraw {
 	public:
 	struct draw_data _data;
-	DragonDraw(struct draw_data data)
+	TidMap *_tidMap;
+	DragonDraw(struct draw_data data, TidMap *tidMap)
+	:_tidMap(tidMap)
 	{
 		_data = data;
 	}
-
+// Threads : 5
+//               |<-inte_size->|
+// #-------------|-------------|-------------|-------------|-------------#
+//start          1     |       2             3     |       4           end
+//                     |                           |                     .
+//                  r.begin()                    r.end()
+//  start_color = r.begin()/interval_size = 1
+//  end_color   = r.end()/interval_size   = 3
+//
 	void operator()(const tbb::blocked_range<uint64_t>& r) const
 	{
-		int id = gettid();
-		dragon_draw_raw(r.begin(), r.end(), _data.dragon,
+		uint64_t interval_size = _data.size / _data.nb_thread;
+
+		unsigned int  start_color = r.begin() / interval_size;
+		unsigned int  end_color = r.end() / interval_size;
+
+		for(unsigned int color = start_color; color <= end_color; ++color)
+		{
+			uint64_t color_start = interval_size * color + 1;
+			uint64_t color_end = (color + 1) * interval_size;
+
+			// EX :
+			// Si color == 0, alors r.begin() > color_end
+			// si color == 4, alors r.end() < color_start
+			if( color_end < r.begin() || r.end() < color_start)
+				continue;
+
+			// Quand color = 1, draw_start = r.begin()
+			uint64_t draw_start = max(color_start, r.begin());
+
+			// Quand color = 3, draw_end = r.end()
+			uint64_t draw_end = min(color_end, r.end());
+
+			dragon_draw_raw(draw_start, draw_end, _data.dragon,
 						_data.dragon_width, _data.dragon_height,
-						_data.limits, id);
-
-
+						_data.limits, color);
+		}
 	}
 };
 
@@ -161,7 +200,8 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 	parallel_for(blocked_range<uint64_t>(0,area), dc);
 
 	/* 3. Dessiner le dragon : DragonDraw */
-	DragonDraw dd = DragonDraw(data);
+	TidMap *tidMap = new TidMap(nb_thread);
+	DragonDraw dd = DragonDraw(data, tidMap);
 	parallel_for(blocked_range<uint64_t>(0,size), dd);
 
 	/* 4. Effectuer le rendu final */
