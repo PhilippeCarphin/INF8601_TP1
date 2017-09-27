@@ -212,8 +212,8 @@ int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uin
 
 	free_palette(palette);
 	FREE(data.tid);
-	//*canvas = dragon;
-	*canvas = NULL;
+	*canvas = dragon;
+	// *canvas = NULL;
 	return 0;
 }
 
