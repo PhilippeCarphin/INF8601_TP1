@@ -69,15 +69,28 @@ class DragonDraw {
 	{
 		_data = data;
 	}
-// Threads : 5
-//               |<-inte_size->|
-// #-------------|-------------|-------------|-------------|-------------#
-//start          1     |       2             3     |       4           end
-//                     |                           |                     .
-//                  r.begin()                    r.end()
-//  start_color = r.begin()/interval_size = 1
-//  end_color   = r.end()/interval_size   = 3
-//
+	// Threads : 5
+	//               |<-inte_size->|
+	//               |  r.begin()  |                 r.end()
+	//               |     |       |                   |
+	// #-------------|-------------|-------------|-------------|-------------#
+	//start          1     |       2             3     |       4           end
+	//               |     |       |             |     |       |
+	//               |     |       |             |     |       |
+	//               |     |       |             |     |       |
+	//color=1: color_start |       |             |     |       |
+	//                draw_start   |             |     |       |
+	//                          color_end        |     |       |
+	//                          draw_end         |     |       |
+	//                                           |     |       |
+	//                                           |     |       |
+	//                                           |     |       |
+	//color=3:                            start_color  |       |
+	//                                    draw_start   |       |
+	//                                              draw_end   |
+	//                                                    color_end
+	//  start_color = r.begin()/interval_size = 1
+	//  end_color   = r.end()/interval_size   = 3
 	void operator()(const tbb::blocked_range<uint64_t>& r) const
 	{
 		uint64_t interval_size = _data.size / _data.nb_thread;
@@ -87,19 +100,13 @@ class DragonDraw {
 
 		for(unsigned int color = start_color; color <= end_color; ++color)
 		{
-			uint64_t color_start = interval_size * color + 1;
+			uint64_t color_start = interval_size * color;
 			uint64_t color_end = (color + 1) * interval_size;
 
-			// EX :
-			// Si color == 0, alors r.begin() > color_end
-			// si color == 4, alors r.end() < color_start
 			if( color_end < r.begin() || r.end() < color_start)
 				continue;
 
-			// Quand color = 1, draw_start = r.begin()
 			uint64_t draw_start = max(color_start, r.begin());
-
-			// Quand color = 3, draw_end = r.end()
 			uint64_t draw_end = min(color_end, r.end());
 
 			dragon_draw_raw(draw_start, draw_end, _data.dragon,
@@ -142,7 +149,6 @@ class DragonClear {
 
 int dragon_draw_tbb(char **canvas, struct rgb *image, int width, int height, uint64_t size, int nb_thread)
 {
-	TODO("dragon_draw_tbb");
 	struct draw_data data;
 	limits_t limits;
 	char *dragon = NULL;
