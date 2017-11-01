@@ -20,3 +20,5 @@ autom4te.cache
 compile
 libtool
 missing
+*.ppm
+results/
