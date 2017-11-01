@@ -4,3 +4,19 @@
 *.a
 
 *.o
+**/.deps/*
+**/Makefile
+**/Makefile.in
+src/dragonizer
+stamp-h1
+test-driver
+config.*
+configure
+depcomp
+install-sh
+ltmain.sh
+aclocal.m4
+autom4te.cache
+compile
+libtool
+missing
